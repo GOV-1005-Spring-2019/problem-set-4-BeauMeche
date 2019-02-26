@@ -43,23 +43,31 @@ ML2 <- W %>%
 
 #ML #3: number of gender that didnt match gender combined
 ML3 <- poll %>%
+  #find the rows with the variables that dont match across
   filter(gender != gender_combined) %>%
   count() %>% pull (n)
 
 #ML #4: race column discrepancies
 ML4 <- poll %>%
   select(race_eth, file_race_black) %>%
+  # narrow down to those who checked white in teh first col. and non-white in the   second
   filter(race_eth == "White" &
          file_race_black != "White") %>%
+  #count/pull to assign a numeric value to ML4 for ease in the inline code later
   count() %>% pull(n)
 
 #ML #5: fastest Rep vs. fastest Dem
 ML5 <- poll %>%
+  # remove outlying parties
   filter(response == "Dem" | response == "Rep") %>%
   group_by(response) %>%
+  # pull out the first (most recent) entry for each group
   summarize(time = min(timestamp)) %>%
+  #flip the table variables
   spread(response, time) %>%
+  #subtract within the round to get a result in only minutes (no seconds etc.)
   mutate(diff = round(Rep - Dem, 0)) %>%
+  #select 'diff'so that ML5 has a numeric value for in-text entry later
   select(diff)
 ```
 There were `r dems` respondents who supported the Democratic candidate. 
@@ -76,24 +84,35 @@ The first `response` of Rep came `r ML5` minutes (rounded to the nearest minute)
 
 ```{r echo=FALSE, message=FALSE}
 chart <- poll %>%
+  #cut out data we don't need here
   select(response, race_eth, final_weight) %>%
+  # remove entries with incomplete data
   filter(race_eth != "[DO NOT READ] Don't know/Refused") %>%
-  mutate(race_eth = fct_relevel(race_eth, c("White", "Black", "Hispanic", "Asian", "Other")))%>%
+  #rearrange the variables on the left of the table
+  mutate(race_eth = fct_relevel(race_eth, c("White",          "Black", "Hispanic", "Asian", "Other")))%>%
+  #condense the varswe want percentages for
   group_by(race_eth, response) %>%
   summarize(total = sum(final_weight)) %>%
+  #flip the table and fill and "NA"s with '0'
   spread(key = response, value = total, fill = 0) %>%
   ungroup()
 
 chart %>%
+  #create relevant variables to comupte the desired values
   mutate(all = Dem+Rep+Und+`3`)%>%
   mutate(Dem = Dem/all) %>%
   mutate(Rep = Rep/all) %>%
   mutate(Und = Und/all) %>%
+  #keep all and 3rd party entries from affecting the calculations
   select(-all, -`3`) %>%
   ungroup() %>%
+  #change the 0 back to 'NA'
   na_if(0) %>%
+  #create the table
   gt() %>%
-fmt_percent(columns = vars(Dem, Rep, Und), decimals = 0) %>%
+  #take the calculations and turn them to percentages for ease of the eye
+  fmt_percent(columns = vars(Dem, Rep, Und), decimals = 0) %>%
+  #add labels, titles, sources etc. 
     tab_header(
         title = ("Demographic Polling Results in North Carolina's 9th Congressional District")) %>%
     tab_source_note(source_note = "New York Times Upshot/Siena College 2018 live polls") %>%
@@ -108,38 +127,51 @@ fmt_percent(columns = vars(Dem, Rep, Und), decimals = 0) %>%
 #Question 3
 
 ```{r echo=FALSE, message=FALSE}
-ew <- poll %>%
+poll %>%
+#we want to know about weight of voting action per education level
 select(educ, final_weight) %>%
+  #remove incomplete lines
   filter(educ != "[DO NOT READ] Refused") %>%
+  #rearrange labels to be in the desired order
   mutate(educ = fct_relevel(educ, c("Grade school", "High school", 
-                                    "Some college or trade school", "Bachelors' degree", "Graduate or Professional Degree"))) %>%
-  ggplot(aes(x = educ, y = final_weight)) + geom_violin() + coord_flip() +    geom_jitter(alpha = .4, width = .22) + 
+                                    "Some college or trade school", "Bachelors' degree", 
+                                    "Graduate or Professional Degree"))) %>%
+  #plot with a coordinate flip so that the 'violins' are horizontal
+  ggplot(aes(x = educ, y = final_weight)) + geom_violin() + coord_flip() +    geom_jitter(alpha = .35, width = .23) + 
+  #label accordingly
   labs(title ="More Educated Matter Less in North Carolina 9th",
        subtitle ="Poll gives more weight to people who are less likely to participate in polls",
        caption = "New York Times Upshot/Siena College 2018 live polls")+
+  #the coordinate flop affects the assignment of the x,y labels
   xlab(NULL) + 
   ylab("Weight Given to Respondent in Calculating Poll Results")
-ew
+
 ```
 
 
 #Question 4
 
 ```{r echo = FALSE, message=FALSE}
-q4 <- poll %>%
+# I am curious about which 'generation' procrastinates their civic duties more. Admittedly this graph likely would be best displayed as a percentage factoring the population size of each age group, though when I attampted this my result was far more confusing to the reader. 
+poll %>%
+  #pull out the aspects that are interesting
   select(ager, timestamp) %>%
+  #remove incomplete data
   filter(ager != "[DO NOT READ] Refused")%>%
+  #separate into groups
   group_by(timestamp, ager) %>%
+  # I chose a histogram to show the quantity of traffic per group per day.   because each person only has one timestamp, this avoids the skewing one would get from 'final_weight'. I added color merely for decorative purposes. 
   ggplot(aes(x = timestamp, color = ager)) + geom_histogram(show.legend = FALSE)+
+  #facet wrap so that each group is shown seperately, I opted for this because of the small number of groups and the confusing product of leaving it all together. I feel like this format lets the reader see who exactly is doing what. 
   facet_wrap(~ager) + 
+  #Labels etc. 
   ylab("Responses") +xlab(NULL) +
   labs(title = "Responses by Age Group Over Time",
        subtitle = "who procrastinates the most?", 
        caption = "Deviance from the date line indicates the time of the day")
-q4
 ```
 
-#Colleagues
-Debora G., Diego M., Chris O., Dillon (CA)
+#Colleagues:
+Debora G., Diego M., Chris O., Dillon S. (CA)
 
 
