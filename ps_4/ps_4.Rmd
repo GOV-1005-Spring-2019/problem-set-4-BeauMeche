@@ -79,7 +79,7 @@ chart %>%
 fmt_percent(columns = vars(Dem, Rep, Und), decimals = 0) %>%
     tab_header(
         title = ("Demographic Polling Results in N.C. 9")) %>%
-    tab_source_note(source_note = "Data from the 3rd wave for North Carolina's 9th Congressional District") %>%
+    tab_source_note(source_note = "New York Times Upshot/Siena College 2018 live polls") %>%
     cols_label(
       race_eth = "",
       Dem = "DEM.",
@@ -92,7 +92,17 @@ fmt_percent(columns = vars(Dem, Rep, Und), decimals = 0) %>%
 
 ```{r echo=FALSE, message=FALSE}
 ew <- poll %>%
-  
+select(educ, final_weight) %>%
+  filter(educ != "[DO NOT READ] Refused") %>%
+  mutate(educ = fct_relevel(educ, c("Grade school", "High school", 
+                                    "Some college or trade school", "Bachelors' degree", "Graduate or Professional Degree"))) %>%
+  ggplot(aes(x = educ, y = final_weight)) + geom_violin() + coord_flip() +    geom_jitter(alpha = .4, width = .22) + 
+  labs(title ="More Educated Matter Less in North Carolina 9th",
+       subtitle ="Poll gives more weight to people who are less likely to participate in polls",
+       caption = "New York Times Upshot/Siena College 2018 live polls")+
+  xlab(NULL) + 
+  ylab("Weight Given to Respondent in Calculating Poll Results")
+ew
 ```
 
 
