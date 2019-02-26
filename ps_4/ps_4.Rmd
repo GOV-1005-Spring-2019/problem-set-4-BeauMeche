@@ -15,21 +15,29 @@ library(lubridate)
 ```
 
 #Question 1
+
 ```{r echo = FALSE, message=FALSE}
 poll <- read_csv(file = "ps_4_elections-poll-nc09-3.csv")
 
 #Question 1
+#assigning this set of filters etc. to a name for simmplicity in the first set of MadLibs
 W <- poll %>%
+  #interested in sum of supporters per party for a while, so grouping my aim of responses
   group_by(response) %>%
   count() %>%
+  # flipping the col. names for pulling ease below
   spread(response, n)
 
 # ML #1: dem voters
+# using pre-filtered data
 dems <- W %>%
+  # already set up with a sum above, just gotta grab
   pull(Dem)
 
 #ML #2: republicans more than undecideds
+#using pre-filtered data
 ML2 <- W %>%
+  # already have the sums, now I need a new variable name to pull the new sum with
   mutate(r_u = Rep - Und) %>%
   pull(r_u)
 
@@ -54,9 +62,18 @@ ML5 <- poll %>%
   mutate(diff = round(Rep - Dem, 0)) %>%
   select(diff)
 ```
-## add the sentences here
+There were `r dems` respondents who supported the Democratic candidate. 
+
+There were `r ML2` more respondents who favored the Republican candidate than who were Undecided.
+
+There are two gender variables (`gender` and `gender_combined`). There are `r ML3` individuals for whom these variables have different values. 
+
+There are `r ML4` respondents listed as "White" under `race_eth` who are not listed as "White" under `file_race_black`. 
+
+The first `response` of Rep came `r ML5` minutes (rounded to the nearest minute) before the first `response` of Dem. 
 
 #Question 2
+
 ```{r echo=FALSE, message=FALSE}
 chart <- poll %>%
   select(response, race_eth, final_weight) %>%
@@ -78,7 +95,7 @@ chart %>%
   gt() %>%
 fmt_percent(columns = vars(Dem, Rep, Und), decimals = 0) %>%
     tab_header(
-        title = ("Demographic Polling Results in N.C. 9")) %>%
+        title = ("Demographic Polling Results in North Carolina's 9th Congressional District")) %>%
     tab_source_note(source_note = "New York Times Upshot/Siena College 2018 live polls") %>%
     cols_label(
       race_eth = "",
@@ -106,6 +123,23 @@ ew
 ```
 
 
+#Question 4
 
+```{r echo = FALSE, message=FALSE}
+q4 <- poll %>%
+  select(ager, timestamp) %>%
+  filter(ager != "[DO NOT READ] Refused")%>%
+  group_by(timestamp, ager) %>%
+  ggplot(aes(x = timestamp, color = ager)) + geom_histogram(show.legend = FALSE)+
+  facet_wrap(~ager) + 
+  ylab("Responses") +xlab(NULL) +
+  labs(title = "Responses by Age Group Over Time",
+       subtitle = "who procrastinates the most?", 
+       caption = "Deviance from the date line indicates the time of the day")
+q4
+```
+
+#Colleagues
+Debora G., Diego M., Chris O., Dillon (CA)
 
 
