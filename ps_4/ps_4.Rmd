@@ -69,6 +69,7 @@ ML5 <- poll %>%
   mutate(diff = round(Rep - Dem, 0)) %>%
   #select 'diff'so that ML5 has a numeric value for in-text entry later
   select(diff)
+  # reversed Rep and Dem per the typo in the Pset, 
 ```
 There were `r dems` respondents who supported the Democratic candidate. 
 
@@ -78,7 +79,7 @@ There are two gender variables (`gender` and `gender_combined`). There are `r ML
 
 There are `r ML4` respondents listed as "White" under `race_eth` who are not listed as "White" under `file_race_black`. 
 
-The first `response` of Rep came `r ML5` minutes (rounded to the nearest minute) before the first `response` of Dem. 
+The first `response` of Dem came `r ML5` minutes (rounded to the nearest minute) before the first `response` of Rep 
 
 #Question 2
 
