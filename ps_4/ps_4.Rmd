@@ -108,7 +108,9 @@ chart %>%
   select(-all, -`3`) %>%
   ungroup() %>%
   #change the 0 back to 'NA'
-  na_if(0) %>%
+  na_if(0) %>% 
+  # Per an anonyous piazza post, I attempted to change 'NA' to a '-'... unseccessfullly
+  fmt_missing(columns = vars(Und), rows = 4) %>%
   #create the table
   gt() %>%
   #take the calculations and turn them to percentages for ease of the eye
